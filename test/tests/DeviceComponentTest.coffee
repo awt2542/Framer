@@ -1,3 +1,5 @@
+assert = require "assert"
+
 describe "DeviceComponent", ->
 
 	it "should default to iphone 7 silver", ->
@@ -105,7 +107,7 @@ describe "DeviceComponent", ->
 
 		device.deviceType = "nexus-5-black"
 		device.context.run ->
-			Screen.size.should.eql {width:1080, height:1920}
+			Screen.size.should.eql {width: 1080, height: 1920}
 			Utils.inspect(Screen).should.equal "<Screen 1080x1920>"
 
 	it "should calculate canvas frames", ->
@@ -116,7 +118,7 @@ describe "DeviceComponent", ->
 
 		device.deviceType = "nexus-5-black"
 		device.context.run ->
-			Screen.size.should.eql {width:1080, height:1920}
+			Screen.size.should.eql {width: 1080, height: 1920}
 			Screen.canvasFrame.should.eql device.screen.canvasFrame
 
 		device.deviceType = "fullscreen"
@@ -133,19 +135,38 @@ describe "DeviceComponent", ->
 
 		device.orientation.should.equal 0
 		device.isPortrait.should.equal true
-		device.screenSize.should.eql {width:1080, height:1920}
+		device.screenSize.should.eql {width: 1080, height: 1920}
 
 		device.rotateLeft(false)
 		device.orientation.should.equal 90
 		device.isPortrait.should.equal false
-		device.screenSize.should.eql {width:1920, height:1080}
+		device.screenSize.should.eql {width: 1920, height: 1080}
 
 		device.rotateRight(false)
 		device.orientation.should.equal 0
 		device.isPortrait.should.equal true
-		device.screenSize.should.eql {width:1080, height:1920}
+		device.screenSize.should.eql {width: 1080, height: 1920}
 
 		device.rotateRight(false)
 		device.orientation.should.equal -90
 		device.isPortrait.should.equal false
-		device.screenSize.should.eql {width:1920, height:1080}
+		device.screenSize.should.eql {width: 1920, height: 1080}
+
+	it "should return the correct platform per device", ->
+		device = new Framer.DeviceComponent()
+		for key, value of Framer.DeviceComponent.Devices
+			device.deviceType = key
+			switch device.platform()
+				when "iOS"
+					assert(_.startsWith(key, "iphone") or _.startsWith(key, "ipad") or _.startsWith(key, "apple-iphone") or _.startsWith(key, "apple-ipad"), "#{key} should not have platform iOS")
+				when "watchOS"
+					assert(_.startsWith(key, "apple-watch") or _.startsWith(key, "applewatch"), "#{key} should not have platform watchOS")
+				when "Windows"
+					assert(_.startsWith(key, "dell") or _.startsWith(key, "microsoft"), "#{key} should not have platform Windows")
+				when "Android"
+					assert(_.startsWith(key, "google") or _.startsWith(key, "nexus") or _.startsWith(key, "htc") or _.startsWith(key, "samsung"), "#{key} should not have platform Android")
+				when "macOS"
+					assert(_.startsWith(key, "apple-macbook") or _.startsWith(key, "apple-imac") or _.startsWith(key, "desktop-safari"), "#{key} should not have platform macOS")
+				else
+					# Exceptions
+					assert(key in ["fullscreen", "custom", "sony-w85Oc", "test"], "#{key} should have a platform specified")
